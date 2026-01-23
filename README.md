@@ -36,12 +36,14 @@ The proposed system consists of the following major components:
 
 1. **Ambulance Unit**
    - ESP32 microcontroller
+   - LoRa transreceiver
    - GPS module / simulated GPS coordinates
    - LoRa transmitter for long-range communication
 
 2. **Traffic Junction Unit**
    - Arduino-based traffic signal controller
-   - LoRa receiver
+   - LoRa transreceiver
+   - GPS module / simulated GPS coordinates
    - Automatic signal preemption logic
    - Buzzer alert for emergency indication
 
@@ -54,6 +56,7 @@ The proposed system consists of the following major components:
    - Emergency notification and acceptance
    - Live ambulance tracking
    - Route visualization and ETA estimation
+   - Real Time Navigation
 
 ---
 
