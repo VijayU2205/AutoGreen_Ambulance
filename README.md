@@ -1,137 +1,109 @@
-🚑 AutoGreen Ambulance Priority System using IoT and LoRa
-📌 Abstract
+## Abstract
 
-Traffic congestion significantly delays emergency medical services in urban environments, often resulting in critical loss of life. This project presents AutoGreen, an intelligent ambulance priority system that dynamically preempts traffic signals using real-time GPS data and long-range LoRa communication. The proposed system enables ambulances to communicate their location to upcoming traffic junctions, allowing automatic green signal allocation along the ambulance route. A web-based control dashboard integrated with offline OSRM routing further assists in navigation and emergency coordination. Experimental results demonstrate a significant reduction in ambulance waiting time at intersections, validating the effectiveness of the system for smart city deployments.
+Urban traffic congestion significantly impacts emergency response times, particularly for ambulances operating in densely populated cities. This project presents an **IoT-enabled Automatic Green Signal Preemption System** that prioritizes ambulances at signalized intersections using **GPS tracking** and **LoRa-based long-range communication**. 
 
-🔑 Keywords
+The proposed system enables ambulances to continuously transmit their real-time location to upcoming traffic junctions, allowing automatic green signal allocation along the ambulance route. A web-based control dashboard integrated with offline routing assists emergency operators in navigation and coordination. Experimental results demonstrate a significant reduction in ambulance waiting time at intersections, validating the effectiveness of the system for smart city deployments.
 
-Smart Traffic Management, Ambulance Priority, IoT, LoRa Communication, GPS Tracking, Smart Cities, Emergency Response System
+---
 
-🧠 Problem Statement
+## Keywords
 
-Urban traffic congestion severely affects ambulance response times. Existing traffic systems lack real-time coordination with emergency vehicles, leading to unnecessary delays at signalized intersections.
+Smart Traffic Management, Ambulance Priority, Internet of Things (IoT), LoRa Communication, GPS Tracking, Emergency Response Systems, Smart Cities
 
-🎯 Objectives
+---
 
-To design an automatic traffic signal preemption system for ambulances
+## Problem Statement
 
-To enable real-time ambulance-to-junction communication using LoRa
+Urban traffic congestion severely affects ambulance response times. Existing traffic signal systems lack real-time coordination with emergency vehicles, leading to unnecessary delays at signalized intersections. Manual traffic clearance methods are inefficient, unsafe, and unreliable during peak traffic conditions.
 
-To reduce ambulance waiting time at intersections
+---
 
-To provide a web-based emergency monitoring and routing interface
+## Objectives
 
-To support both simulation and real-field testing
+The primary objectives of this project are:
 
-🏗️ System Architecture
+- To design an automatic traffic signal preemption system for ambulances  
+- To enable real-time ambulance-to-junction communication using LoRa technology  
+- To reduce ambulance waiting time at traffic intersections  
+- To provide a web-based emergency monitoring and routing interface  
+- To support both simulation-based testing and real-field deployment  
 
-The system consists of four major components:
+---
 
-Ambulance Unit (ESP32 + LoRa)
+## System Architecture
 
-Sends GPS coordinates periodically
+The proposed system consists of the following major components:
 
-Simulates ambulance movement or uses live GPS
+1. **Ambulance Unit**
+   - ESP32 microcontroller
+   - GPS module / simulated GPS coordinates
+   - LoRa transmitter for long-range communication
 
-Triggers emergency acceptance via server
+2. **Traffic Junction Unit**
+   - Arduino-based traffic signal controller
+   - LoRa receiver
+   - Automatic signal preemption logic
+   - Buzzer alert for emergency indication
 
-Traffic Junction Unit (Arduino + LoRa)
+3. **Central Server (Raspberry Pi / PC)**
+   - Flask-based backend API
+   - Emergency management logic
+   - Offline OSRM routing engine (Docker-based)
 
-Receives ambulance GPS
+4. **Web-Based Control Dashboard**
+   - Emergency notification and acceptance
+   - Live ambulance tracking
+   - Route visualization and ETA estimation
 
-Computes distance and direction
+---
 
-Preempts traffic signals dynamically
+## Working Principle
 
-Activates buzzer alerts for nearby emergency
+1. When an emergency request is accepted, the ambulance unit begins transmitting its GPS coordinates using LoRa.
+2. The traffic junction unit receives ambulance location updates and calculates distance and bearing.
+3. When the ambulance enters a predefined radius (e.g., 300 meters), traffic signal preemption is activated.
+4. The corresponding approach direction is granted a green signal, and other signals are held red.
+5. Once the ambulance crosses the junction, normal traffic operation is restored.
+6. The web dashboard provides real-time visualization and routing assistance throughout the process.
 
-Central Server (Raspberry Pi / PC)
+---
 
-Flask-based REST API
+## Experimental Results and Discussion
 
-Emergency assignment and management
+Experimental testing was conducted using both simulation and controlled field trials. The results indicate:
 
-Data logging for analysis and publication
+- Significant reduction in ambulance waiting time at intersections  
+- Reliable long-range communication using LoRa at urban distances  
+- Accurate direction-based signal preemption  
+- Stable system performance under repeated emergency scenarios  
 
-Web Dashboard
+These results demonstrate the feasibility of deploying the proposed system in real-world smart city environments.
 
-Emergency popup & acceptance
+---
 
-Live ambulance tracking
+## Conclusion
 
-Offline routing using OSRM (Docker-based)
+This project successfully demonstrates an intelligent, low-cost, and scalable solution for ambulance signal preemption using IoT and LoRa communication. By integrating real-time vehicle tracking, automated traffic control, and web-based monitoring, the system improves emergency response efficiency and enhances urban traffic management. The proposed architecture is suitable for further expansion to city-wide deployment and integration with smart city infrastructure.
 
-🛠️ Tools and Technologies Used
-Hardware
+---
 
-ESP32 Dev Module
+## Future Scope
 
-Arduino Uno
+- Integration with multiple ambulances simultaneously  
+- Dynamic hospital selection based on real-time traffic conditions  
+- AI-based traffic prediction and optimization  
+- Integration with government traffic management systems  
 
-LoRa SX1278 (433 MHz)
+---
 
-Traffic Signal LEDs
+## Repository Structure
 
-Buzzer
-
-Software
-
-Arduino IDE
-
-Python (Flask)
-
-JavaScript (Frontend Logic)
-
-Leaflet.js (Map Visualization)
-
-Docker
-
-OSRM (Offline Routing Engine)
-
-Git & GitHub
-
-🔄 Working Principle
-
-Emergency request is generated by a patient
-
-Ambulance driver accepts emergency via web dashboard
-
-Ambulance ESP32 starts transmitting GPS coordinates via LoRa
-
-Junction Arduino calculates:
-
-Distance to ambulance
-
-Direction of approach
-
-If distance ≤ 300 m:
-
-Buzzer turns ON
-
-Green signal is preempted in ambulance direction
-
-After ambulance passes (≤ 20 m):
-
-System returns to normal traffic cycle
-
-📊 Results and Observations
-
-Successful detection of ambulance within 300 m radius
-
-Accurate direction-based signal preemption
-
-Reduction in average junction waiting time
-
-Reliable LoRa communication over long distances
-
-Seamless integration of routing and hardware control
-
-📈 Outcome of the Work
-
-Developed a fully functional emergency traffic preemption prototype
-
-Demonstrated feasibility for real-world smart city deployment
-
-Generated experimental data suitable for IEEE conference/journal publication
-
-System architecture supports scalability and multi-junction expansion
+```text
+AutoGreen_Ambulance/
+│
+├── ambulance_lora/        # ESP32 ambulance code
+├── junction_lora/         # Arduino traffic junction code
+├── server/                # Flask backend APIs
+├── web_app/               # Web-based dashboard (HTML, CSS, JS)
+├── osrm/                  # Offline routing data (Docker)
+└── README.md
