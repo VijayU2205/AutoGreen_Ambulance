@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">AutoGreen Ambulance</string>
+
+    <!-- Server Status -->
+    <string name="checking_server">Checking server connection...</string>
+    <string name="server_connected">✅ Server Connected</string>
+    <string name="server_disconnected">❌ Server Disconnected</string>
+
+    <!-- Registration -->
+    <string name="user_registration">User Registration</string>
+    <string name="full_name">Full Name *</string>
+    <string name="enter_full_name">Enter your full name</string>
+    <string name="age">Age *</string>
+    <string name="enter_age">Enter your age</string>
+    <string name="mobile_number">Mobile Number *</string>
+    <string name="enter_mobile">Enter 10-digit mobile number</string>
+    <string name="send_otp">Send OTP</string>
+
+    <!-- OTP Section -->
+    <string name="enter_otp">Enter OTP *</string>
+    <string name="enter_4_digit_otp">Enter 4-digit OTP</string>
+    <string name="verify_login">Verify &amp; Login</string>
+    <string name="resend_otp">Resend OTP</string>
+    <string name="resend_in">Resend in %ds</string>
+    <string name="ready_resend">Ready to resend</string>
+
+    <!-- Emergency Section -->
+    <string name="emergency_service">Emergency Service</string>
+    <string name="emergency_call">🚨 EMERGENCY CALL</string>
+    <string name="press_emergency">Press in case of emergency</string>
+
+    <!-- Status Messages -->
+    <string name="ready">Ready</string>
+    <string name="initializing">Initializing...</string>
+    <string name="status">Status: %s</string>
+</resources>
