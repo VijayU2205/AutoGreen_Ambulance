@@ -104,8 +104,8 @@ This project successfully demonstrates an intelligent, low-cost, and scalable so
 ```text
 AutoGreen_Ambulance/
 │
-├── ambulance_lora/        # ESP32 ambulance code
-├── junction_lora/         # Arduino traffic junction code
+├── ambulance_esp32/        # ESP32 ambulance code
+├── junction_esp32/         # Arduino traffic junction code
 ├── server/                # Flask backend APIs
 ├── web_app/               # Web-based dashboard (HTML, CSS, JS)
 ├── osrm/                  # Offline routing data (Docker)
