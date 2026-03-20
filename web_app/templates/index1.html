@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ambulance Dashboard</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+
+  <style>
+    body { font-family: Arial, sans-serif; background:#1e3c72; display:flex; justify-content:center; padding:20px; }
+    .container { width:100%; max-width:1200px; height:90vh; background:white; border-radius:10px; overflow:hidden; display:flex; flex-direction:column; }
+    .app-header { padding:12px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; }
+    .app-content { display:flex; flex:1; }
+    .sidebar { width:320px; padding:12px; overflow:auto; background:#f8f9fa; }
+    .map-container { flex:1; position:relative; }
+    #map { width:100%; height:100%; }
+
+    .map-btn { padding:8px 10px; border-radius:6px; background:#fff; border:none; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,0.12); }
+
+    .card { background:#fff; padding:10px; border-radius:6px; margin-bottom:10px; border:1px solid #ddd; }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen" style="width:100%;max-width:400px;">
+    <div style="background:#fff;padding:20px;border-radius:8px;">
+      <h2>🚑 Ambulance Dashboard</h2>
+      <input id="username" placeholder="Username" style="width:100%;padding:10px;margin:6px 0"/>
+      <input id="password" placeholder="Password" type="password" style="width:100%;padding:10px;margin:6px 0"/>
+      <button onclick="login()" style="width:100%;padding:10px;background:#1e3c72;color:#fff;border:none;border-radius:6px">Login</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="main-app" class="container" style="display:none">
+
+    <div class="app-header">
+      <h3>🚑 Ambulance Dashboard</h3>
+      <div>
+        <span id="driver-name"></span> • <span id="ambulance-no"></span>
+        <button onclick="logout()" class="map-btn">Logout</button>
+      </div>
+    </div>
+
+    <div class="app-content">
+
+      <!-- SIDEBAR -->
+      <div class="sidebar">
+        <div class="card">
+          <h3>Your Status</h3>
+          <p><b>Driver:</b> <span id="your-name">-</span></p>
+          <p><b>Ambulance:</b> <span id="your-ambulance">-</span></p>
+          <button class="map-btn" onclick="centerOnAmbulance()">Center Ambulance</button>
+        </div>
+
+        <div class="card" id="mission-info" style="display:none">
+          <h3>Current Mission</h3>
+          <p><b>Patient:</b> <span id="mission-patient">-</span></p>
+          <p><b>Age:</b> <span id="mission-age">-</span></p>
+          <p><b>Mobile:</b> <span id="mission-mobile">-</span></p>
+          <p><b>Distance:</b> <span id="mission-distance">-</span></p>
+          <button onclick="clearRoute()" class="map-btn">Clear Route</button>
+          <button onclick="completeMission()" class="map-btn" style="margin-top:10px;background:#4caf50;color:white">Complete</button>
+        </div>
+      </div>
+
+      <!-- MAP -->
+      <div class="map-container">
+        <div id="map"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- EMERGENCY POPUP -->
+  <div id="emergency-popup" style="display:none;position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.6);justify-content:center;align-items:center;">
+    <div style="background:white;padding:20px;border-radius:8px;width:90%;max-width:400px;">
+      <h2>🚨 New Emergency</h2>
+      <p><b>Name:</b> <span id="popup-name"></span></p>
+      <p><b>Age:</b> <span id="popup-age"></span></p>
+      <p><b>Mobile:</b> <span id="popup-mobile"></span></p>
+      <p><b>Location:</b> <span id="popup-location"></span></p>
+
+      <button onclick="acceptEmergency()" class="map-btn" style="background:#4caf50;color:white;width:100%;margin-top:10px;">Accept</button>
+      <button onclick="declineEmergency()" class="map-btn" style="background:#f44336;color:white;width:100%;margin-top:10px;">Decline</button>
+    </div>
+  </div>
+
+  <!-- JS FILES -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+  <script src="{{ url_for('static', filename='js/app1.js') }}"></script>
+
+</body>
+</html>

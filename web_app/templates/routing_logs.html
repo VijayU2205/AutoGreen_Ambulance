@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Routing Logs</title>
+  <style>
+    body{font-family: Arial, sans-serif;padding:20px}
+    table{border-collapse:collapse;width:100%}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left}
+    th{background:#f4f4f4}
+    .small{font-size:0.9rem;color:#666}
+  </style>
+</head>
+<body>
+  <h2>Recent routing_distance messages (dashboard)</h2>
+  <p class="small">Showing the most recent messages received by the dashboard. Auto-refreshes every 3s.</p>
+  <p><a href="/">Back to dashboard</a></p>
+  <table id="logs-table">
+    <thead>
+      <tr><th>Timestamp (UTC)</th><th>Driver ID</th><th>Emergency ID</th><th>Routing Distance (m)</th><th>Estimated Time (min)</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    async function fetchLogs(){
+      try{
+        const res = await fetch('/api/recent_routing');
+        const data = await res.json();
+        const tbody = document.querySelector('#logs-table tbody');
+        tbody.innerHTML = '';
+        (data.logs || []).forEach(log => {
+          const tr = document.createElement('tr');
+          const d = new Date(log.timestamp);
+          tr.innerHTML = `<td>${d.toISOString()}</td><td>${log.driver_id||''}</td><td>${log.emergency_id||''}</td><td>${log.routing_distance||''}</td><td>${log.estimated_time||''}</td>`;
+          tbody.appendChild(tr);
+        });
+      }catch(e){console.error(e);}
+    }
+    fetchLogs();
+    setInterval(fetchLogs,3000);
+  </script>
+</body>
+</html>
