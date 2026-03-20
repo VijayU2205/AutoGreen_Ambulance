@@ -1,0 +1,151 @@
+#include <SPI.h>
+#include <LoRa.h>
+#include <ArduinoJson.h>
+
+#define LORA_SS A0
+#define LORA_RST A1
+#define LORA_DIO0 A2
+#define BUZZER A3
+
+struct Signal { int r,y,g; };
+
+Signal N={2,3,4};
+Signal E={5,6,7};
+Signal S={8,9,10};
+Signal W={A4,1,A5};
+
+Signal* sig[4]={&N,&E,&S,&W};
+
+bool ambulance=false;
+
+float jLat=12.910120;
+float jLon=77.485010;
+
+unsigned long phaseTime=0;
+int dir=0;
+
+// ---------------- MATH ----------------
+float rad(float d){return d*PI/180;}
+
+float dist(float a,float b,float c,float d){
+  float R=6371000;
+  float d1=rad(c-a),d2=rad(d-b);
+
+  float x=sin(d1/2)*sin(d1/2)+
+          cos(rad(a))*cos(rad(c))*sin(d2/2)*sin(d2/2);
+
+  return R*2*atan2(sqrt(x),sqrt(1-x));
+}
+
+float bearing(float a,float b,float c,float d){
+  float y=sin(rad(d-b))*cos(rad(c));
+  float x=cos(rad(a))*sin(rad(c))-
+          sin(rad(a))*cos(rad(c))*cos(rad(d-b));
+  return fmod((atan2(y,x)*180/PI)+360,360);
+}
+
+int dirMap(float b){
+  if(b<45||b>=315)return 0;
+  if(b<135)return 1;
+  if(b<225)return 2;
+  return 3;
+}
+
+// ---------------- SIGNAL ----------------
+void allRed(){
+  for(int i=0;i<4;i++){
+    digitalWrite(sig[i]->r,HIGH);
+    digitalWrite(sig[i]->y,LOW);
+    digitalWrite(sig[i]->g,LOW);
+  }
+}
+
+void setGreen(int d){
+  allRed();
+  digitalWrite(sig[d]->r,LOW);
+  digitalWrite(sig[d]->g,HIGH);
+}
+
+// ---------------- NORMAL ----------------
+void cycle(){
+  if(millis()-phaseTime<8000)return;
+
+  digitalWrite(sig[dir]->g,LOW);
+  digitalWrite(sig[dir]->y,HIGH);
+
+  if(millis()-phaseTime<11000)return;
+
+  dir=(dir+1)%4;
+  phaseTime=millis();
+  setGreen(dir);
+}
+
+// ---------------- LORA ----------------
+void receive(){
+  int s=LoRa.parsePacket();
+  if(!s)return;
+
+  String m="";
+  while(LoRa.available())m+=(char)LoRa.read();
+
+  StaticJsonDocument<256> d;
+  if(deserializeJson(d,m))return;
+
+  if(d["type"]=="AMB_GPS"){
+    float la=d["lat"],lo=d["lon"];
+
+    float distance=dist(la,lo,jLat,jLon);
+    float b=bearing(la,lo,jLat,jLon);
+
+    int approach=dirMap(b);
+
+    if(distance<300){
+      ambulance=true;
+      digitalWrite(BUZZER,HIGH);
+      setGreen(approach);
+
+      StaticJsonDocument<128> r;
+      r["type"]="JUNCTION_GPS";
+      r["lat"]=jLat;
+      r["lon"]=jLon;
+
+      LoRa.beginPacket();
+      serializeJson(r,LoRa);
+      LoRa.endPacket();
+    }
+  }
+
+  if(d["type"]=="PASSED_JUNCTION"){
+    ambulance=false;
+    digitalWrite(BUZZER,LOW);
+    phaseTime=millis();
+  }
+}
+
+// ---------------- SETUP ----------------
+void setup(){
+  Serial.begin(9600);
+
+  pinMode(BUZZER,OUTPUT);
+
+  for(int i=0;i<4;i++){
+    pinMode(sig[i]->r,OUTPUT);
+    pinMode(sig[i]->y,OUTPUT);
+    pinMode(sig[i]->g,OUTPUT);
+  }
+
+  allRed();
+  setGreen(0);
+  phaseTime=millis();
+
+  LoRa.setPins(LORA_SS,LORA_RST,LORA_DIO0);
+  LoRa.begin(433E6);
+
+  Serial.println("🚦 Junction Ready");
+}
+
+// ---------------- LOOP ----------------
+void loop(){
+  receive();
+  if(!ambulance) cycle();
+}
