@@ -1,0 +1,154 @@
+#include <SPI.h>
+#include <LoRa.h>
+#include <ArduinoJson.h>
+
+// LoRa Pins
+#define LORA_SS   5
+#define LORA_RST  14
+#define LORA_DIO0 26
+#define LORA_FREQ 433E6
+
+// Buzzer
+#define BUZZER 27
+
+// State
+bool emergencyActive = false;
+bool gpsAvailable = false;
+bool junctionKnown = false;
+
+float ambLat = 0, ambLon = 0;
+float junctionLat = 0, junctionLon = 0;
+
+// ---------------- GPS MATH ----------------
+float deg2rad(float d){ return d * PI / 180; }
+
+float distance(float la1, float lo1, float la2, float lo2){
+  float R = 6371000;
+  float dLat = deg2rad(la2-la1);
+  float dLon = deg2rad(lo2-lo1);
+
+  float a = sin(dLat/2)*sin(dLat/2) +
+            cos(deg2rad(la1))*cos(deg2rad(la2)) *
+            sin(dLon/2)*sin(dLon/2);
+
+  return R * (2 * atan2(sqrt(a), sqrt(1-a)));
+}
+
+float bearing(float la1, float lo1, float la2, float lo2){
+  float y = sin(deg2rad(lo2-lo1))*cos(deg2rad(la2));
+  float x = cos(deg2rad(la1))*sin(deg2rad(la2)) -
+            sin(deg2rad(la1))*cos(deg2rad(la2))*cos(deg2rad(lo2-lo1));
+  return fmod((atan2(y,x)*180/PI)+360,360);
+}
+
+// ---------------- USB ----------------
+void handleUSB(){
+  if(!Serial.available()) return;
+
+  String msg = Serial.readStringUntil('\n');
+  StaticJsonDocument<256> doc;
+
+  if(deserializeJson(doc,msg)) return;
+
+  String cmd = doc["cmd"];
+
+  if(cmd=="EMERGENCY_ACCEPTED"){
+    emergencyActive = true;
+    Serial.println("🚑 Emergency ON");
+  }
+
+  else if(cmd=="MISSION_COMPLETE"){
+    emergencyActive = false;
+    gpsAvailable = false;
+    junctionKnown = false;
+    digitalWrite(BUZZER, LOW);
+  }
+
+  else if(cmd=="GPS_UPDATE"){
+    ambLat = doc["lat"];
+    ambLon = doc["lon"];
+    gpsAvailable = true;
+
+    Serial.println("📍 GPS Updated");
+  }
+}
+
+// ---------------- LoRa RX ----------------
+void receiveLoRa(){
+  int size = LoRa.parsePacket();
+  if(!size) return;
+
+  String msg="";
+  while(LoRa.available()) msg += (char)LoRa.read();
+
+  StaticJsonDocument<256> doc;
+  if(deserializeJson(doc,msg)) return;
+
+  if(doc["type"]=="JUNCTION_GPS"){
+    junctionLat = doc["lat"];
+    junctionLon = doc["lon"];
+    junctionKnown = true;
+
+    Serial.println("📡 Junction detected");
+  }
+}
+
+// ---------------- LoRa TX ----------------
+void sendGPS(){
+  if(!emergencyActive || !gpsAvailable) return;
+
+  float dist = distance(ambLat, ambLon, junctionLat, junctionLon);
+  float dir = bearing(ambLat, ambLon, junctionLat, junctionLon);
+
+  StaticJsonDocument<256> doc;
+  doc["type"]="AMB_GPS";
+  doc["lat"]=ambLat;
+  doc["lon"]=ambLon;
+  doc["heading"]=dir;
+
+  LoRa.beginPacket();
+  serializeJson(doc, LoRa);
+  LoRa.endPacket();
+
+  Serial.print("📤 Sent GPS Dist=");
+  Serial.println(dist);
+
+  if(dist <= 300) digitalWrite(BUZZER,HIGH);
+
+  if(dist <= 20){
+    StaticJsonDocument<128> p;
+    p["type"]="PASSED_JUNCTION";
+
+    LoRa.beginPacket();
+    serializeJson(p, LoRa);
+    LoRa.endPacket();
+
+    digitalWrite(BUZZER,LOW);
+    junctionKnown=false;
+  }
+}
+
+// ---------------- SETUP ----------------
+void setup(){
+  Serial.begin(115200);
+
+  pinMode(BUZZER,OUTPUT);
+
+  SPI.begin(18,19,23,5);
+  LoRa.setPins(LORA_SS,LORA_RST,LORA_DIO0);
+
+  if(!LoRa.begin(LORA_FREQ)){
+    Serial.println("❌ LoRa FAIL");
+    while(1);
+  }
+
+  Serial.println("✅ LoRa Ready");
+}
+
+// ---------------- LOOP ----------------
+void loop(){
+  handleUSB();
+  receiveLoRa();
+  sendGPS();
+  delay(300);
+}
